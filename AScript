@@ -1,0 +1,82 @@
+using UnityEngine;
+using System;
+using UnityStandardAssets.ImageEffects;
+
+/*
+    This script's function is to read in a given file of values, and apply those values to a given Component of the camera in Unity.
+    Each value (currently) represents each second of the simulation.  This script automatically gradually moves between given values by changing the value every 1/15th of a second.
+    The given file and chosen Component can be interchanged quite easily.  It is planned that all the effect scripts will inherit some master Effect class, but not yet implemented. (18-4-16).
+*/
+
+public class AScript : MonoBehaviour
+{
+    private string[] values_string;
+    private float[] values_float;
+    public int n, n1;               //N and N1 count which frame in the second is currently being displayed, and alters the image effect reflectively.
+    private bool active;            //Is this effect currently active, as determined by the menu?
+    private float x, y, d;          //Initial and desired values for each second.  D is their difference / 12.
+
+    // Use this for initialization
+    void Start()
+    {
+        n = 0;  //Startup initialisation.
+        n1 = 0;
+        x = 0;
+        y = 0;
+
+        //The determined file is read in to the array of strings, values_string.  Each line of the file is an element of the array, corresponding to a certain timestamp.
+        //This array is then converted to an array of floats at startup.  These floats can be passed to the effects scripts.
+
+        values_string = System.IO.File.ReadAllLines("Assets/Effect Scripts/a_effect_script.txt");    //Filename here.
+        values_float = new float[values_string.Length];     //Second array to be converted to.
+
+        for (int j = 0; j < values_string.Length ; j++){    //Conversion
+            values_float[j] = Convert.ToSingle(values_string[j]);
+        }
+
+        //Set inital value to 0.
+        SetVignette(0);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (active) {
+            if (n == 0)                 //If it is the start of a cycle
+            {   
+                x = y;                                              //The old desired value is assigned to the x, representing the current value.
+                y = values_float[GetComponent<Timer>().getSec()];   //Y is now the desired value of the next second.  The currect second is fetched from the Timer script.
+                d = (y - x) / 15;                                   //D is now the difference between the current and desired value / the number of frames we want it to change over. (every 4 frames, so 15)
+                SetVignette(x);                                     //Set Vignette to x.                                 
+                n++;
+            }
+            else if (0 < n && n <= 14)  //If we are partway through a cycle (0<n<15, where n is the current 15th-second)
+            {     
+                if (n1 == 3)                //If it's been 4 frames since the last addition.
+                {
+                    SetVignette(GetComponent<VignetteAndChromaticAberration>().intensity + d);     //Set Vignette to current Vignette + d.  This is repeated every 4 frames (when n = 3), for the next second.
+                    n1 = 0;
+                    n++;
+                }
+                else {
+                    n1++;               //Reset for these 4 frames.
+                }
+
+                if (n == 14)
+                {
+                    n = 0;              //Reset for this second.
+                }
+            }
+        }
+
+
+        if (n == 0) {                   //Active checker.  If the menu boolean corresponding to this value has been changed, this is checked at the start of every second.
+            active = GetComponent<Menu>().A_vignette;
+        }
+    }
+
+    void SetVignette(float input)
+    {
+        GetComponent<VignetteAndChromaticAberration>().intensity = input;
+    }
+}
