@@ -1,0 +1,41 @@
+using UnityEngine;
+
+/*
+    The function of this script is to control the audio being played during the simulation.  It waits for the menu to start the simulation, and plays for the determined number of seconds.
+    After 'end' seconds the script lowers the volume of the music to 0 gradually over one second, then resets the menu and timer ready for the simulation to be restarted.
+*/
+
+public class AudioScript : MonoBehaviour {
+
+    public bool fade, is_running;   //Used for ending fade out.
+    public int end;                 //Number of seconds to be run for.
+
+	// Use this for initialization
+	void Start () {
+        fade = false;
+        GetComponent<AudioSource>().playOnAwake = false;    //Do not play on startup.
+        is_running = false;
+	}
+	
+	// Update is called once per frame
+	void Update () {
+        //Listen for start button
+        if (GetComponent<Menu>().getRun() && !is_running)  //If running, start the music.
+        {
+            GetComponent<AudioSource>().Play();             
+            is_running = true;
+        }
+
+        //If the second number = end, fade out over next 60 frames.
+        if(GetComponent<Timer>().getSec() >= end){
+            fade = true;
+        }
+        if (fade && GetComponent<AudioSource>().volume != 0) {  //Music fades slowly over the next second.
+            GetComponent<AudioSource>().volume = (float) (GetComponent<AudioSource>().volume - 0.015);
+        }
+        if (GetComponent<AudioSource>().volume == 0) {          //Catches at the end of the fade, resetting the timer, ready for the next playthrough.
+            is_running = false;
+            GetComponent<Timer>().reset();
+        }
+	}
+}
