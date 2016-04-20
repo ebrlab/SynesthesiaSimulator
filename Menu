@@ -1,0 +1,38 @@
+using UnityEngine;
+using System.Collections;
+
+/*
+    The function of this script is to control the behaviours of other scripts.  Currently it uses the Unity UI to control when the Simulation begins, and which Effects are applied on it.
+    More control options such as the length of the simulation, and the intensity of each Effect could be added.
+*/
+
+public class Menu : MonoBehaviour {
+    public bool run;                //Has the menu button to run been pressed?
+    public bool A_vignette;         //Each of these correspond to an image effect.  They can be changed in real time to enable or disable the image effect from the Unity UI.
+    public bool B_noise;
+    public bool C_bloom;
+    public bool D_sun_shafts;
+    public bool E_colour_correction;
+
+	// Use this for initialization
+	void Start () {
+        run = false; //Does not start on startup.
+	}
+	
+	// Update is called once per frame
+	void Update () {
+	    
+	}
+
+    public bool getRun() {
+        return run;
+    }
+
+    public void setRun(bool run) {
+        this.run = run;
+    }
+
+    public void commence() {
+        run = true;
+    }
+}
