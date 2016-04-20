@@ -1,0 +1,56 @@
+using UnityEngine;
+using System.Collections;
+using System.Diagnostics;
+
+/*
+    The function of this script is to control the timing of each effect and the music.  A Stopwatch is used to count the real-time run-time of the simulation, and update the current time values accordingly.
+    These values are passed to the AudioScript to ensure that the music runs for the correct amount of time, and are passed to the Effect Scripts to ensure each effect plays the correct line of the
+    provided file at the correct time.
+*/
+
+public class Timer : MonoBehaviour {
+    private Stopwatch stopwatch;    //A stopwatch is used to track the actual duration of the simulation.
+    private bool run, first_run;    //As the simulation should run at a steady 60 frames every second, update will be called every 60 milliseconds.
+    public int sec, n, n1;          //Sec is the number of elapsed seconds of the simulation.  N and N1 are used to track what position in the second the simulation is in.
+
+	// Use this for initialization
+	void Start () {
+        run = false;
+        stopwatch = new Stopwatch();
+        first_run = true;           //Indicates that the stopwatch has been created/reset, and so will need restrarting.
+        sec = 0;
+	}
+	
+	// Update is called once per frame
+	void Update () {
+        //If menu passes yes, start timer.
+        if (GetComponent<Menu>().getRun() && first_run) {   //If the menu function to run has been selected, and this hasn't already happened during this run, then start the stopwatch.
+            run = true;
+            stopwatch.Start();
+            first_run = false;
+        }
+
+        if (run) {          //If running  
+            if (n != 60)    //Counter increases each frame.  Keeps track of time and useful for diagnostics.  After 60 frames gets the current second of the simulation.
+            {
+                n++;
+            }
+            else if (n == 60) { //At the start of each second.
+                sec = (int)stopwatch.ElapsedMilliseconds / 1000;    //This helps if the simulation runs too slowly or quickly, as stopwatch.ElapsedMilliseconds always provides the correct time value, regardless of simulation speed.
+                n = 0;          //Reset for this second.
+            }
+        }
+	}
+
+    public int getSec() {
+        return sec;
+    }
+
+    public void reset() {       //Used when the simulation ends, resetting all time values and creating a new stopwatch.  After this has run the simulation is ready to run.
+        sec = 0;
+        run = false;
+        first_run = true;
+        GetComponent<Menu>().setRun(false);
+        stopwatch = new Stopwatch();
+    }
+}
